@@ -1,21 +1,24 @@
-from flask import Flask, render_template , redirect , url_for , flash , request
-from forms import RegistartionForm, LoginForm
-from chat import CustomChatBot 
+from flask import Flask, render_template, redirect, url_for, flash, request
+from forms import RegistartionForm, LoginForm, CoordinateForm
+from chat import CustomChatBot
+from chat import get_weather
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '092b93416967f9fec0c22c76420ed834'
 
+
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('home.html' )
+    return render_template('home.html')
+
 
 @app.route("/get", methods=["GET", "POST"])
 def chat():
     if request.method == "POST":
         user_input = request.form["msg"]
         return CustomChatBot(user_input)
-
 
 
 @app.route("/about")
@@ -40,8 +43,23 @@ def login():
             flash(f'Welcome Back, {form.email.data}!', 'success')
             return redirect(url_for('home'))
         else:
-            flash("Login Unsuccessful, please check your email and password", 'danger')
+            flash(
+                "Login Unsuccessful, please check your email and password",
+                'danger')
     return render_template('login.html', title='Login', form=form)
+
+
+@app.route("/submit", methods=['POST'])
+def submit():
+    coordinates = CoordinateForm()
+    if coordinates.validate_on_submit():
+        latitude = request.form.get('Latitude')
+        longitude = request.form.get('Longitude')
+        flash("Coordonnées bien enregistrées",'success')
+        weather_data = get_weather(latitude, longitude)
+        return redirect(url_for('map.html'))
+    else:
+        flash("Latitude and longitude are required.", "danger")
 
 if __name__ == '__main__':
     app.run(debug=True)

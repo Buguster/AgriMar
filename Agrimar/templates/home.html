@@ -126,28 +126,29 @@
       });
     });
   });
-        var map;
-        var marker;
-        function initMap() {
-        map = new google.maps.Map(document.getElementById("map"), {
-            center: { lat: 32.377665, lng: -6.319866 },
-            zoom: 8,
-        });
-        map.addListener("click", function (event) {
-            if (marker) {
-            marker.setMap(null);
-            }
-            marker = new google.maps.Marker({
-            position: event.latLng,
-            map: map,
-            title: "Selected Location",
-            icon: {
-                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-            },
-            });
-            document.getElementById("latitude").value = event.latLng.lat();
-            document.getElementById("longitude").value = event.latLng.lng();
-        });
+  // event listener on map to see if the the user click on the map to update the latitude and longitude
+  var map;
+  var marker;
+  function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: 32.377665, lng: -6.319866 },
+      zoom: 8,
+  });
+  map.addListener("click", function (event) {
+      if (marker) {
+      marker.setMap(null);
+      }
+      marker = new google.maps.Marker({
+      position: event.latLng,
+      map: map,
+      title: "Selected Location",
+      icon: {
+          url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+      },
+      });
+      document.getElementById("latitude").value = event.latLng.lat();
+      document.getElementById("longitude").value = event.latLng.lng();
+  });
         document.getElementById("latitude").addEventListener("input", updateMap);
         document.getElementById("longitude").addEventListener("input", updateMap);
         }
@@ -164,24 +165,30 @@
             map: map,
             title: "Selected Location",
             icon: {
-                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png", // Red pin icon
+                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
             },
             });
             map.setCenter({ lat: latitude, lng: longitude });
             map.setZoom(15);
         }
         }
+        // chooose location button 
         document.getElementById("location-btn").addEventListener("click", function () {
-        var mapWindow = document.getElementById("map-window");
-        if (mapWindow.style.display === "none") {
-            mapWindow.style.display = "block";
-            initMap();
-        } else {
-            mapWindow.style.display = "none";
-        }
+          var mapWindow = document.getElementById("map-window");
+          var locationBtn = document.getElementById("location-btn");
+
+          if (mapWindow.style.display === "none") {
+              mapWindow.style.display = "block";
+              locationBtn.style.display = "none"; // Hide the button when showing the map
+              initMap();
+          } else {
+              mapWindow.style.display = "none";
+              locationBtn.style.display = "block"; // Show the button when hiding the map
+          }
         });
-        document.getElementById("submit-btn").addEventListener("click", function () {
-            
+
+        // on submit button 
+        document.getElementById("submit-btn").addEventListener("click", function () {  
         var latitude = document.getElementById("latitude").value;
         var longitude = document.getElementById("longitude").value;
         if (latitude && longitude) {
@@ -194,10 +201,10 @@
             }
             };
             xhr.send(
-            "latitude=" +
-                encodeURIComponent(latitude) +
-                "&longitude=" +
-                encodeURIComponent(longitude)
+              "latitude=" +
+              encodeURIComponent(latitude) +
+              "&longitude=" +
+              encodeURIComponent(longitude)
             );
         } else {
             console.error("Latitude and longitude are required.");

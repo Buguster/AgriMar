@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      h1 {
+        text-align: center;
+      }
+      .weather-info {
+        margin-top: 20px;
+      }
+      .weather-item {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Current Weather Information</h1>
+      <div class="weather-info">
+        <div class="weather-item">
+          <strong>Location:</strong> {{ weather_data.timezone }}
+        </div>
+        <div class="weather-item">
+          <strong>Current Temperature:</strong> {{ weather_data.current.temp }}
+          K
+        </div>
+        <div class="weather-item">
+          <strong>Humidity:</strong> {{ weather_data.current.humidity }}%
+        </div>
+        <div class="weather-item">
+          <strong>Wind Speed:</strong> {{ weather_data.current.wind_speed }} m/s
+        </div>
+      </div>
+      <div class="weather-item">
+        <strong>Sunrise Time:</strong> {{ weather_data.current.sunrise |
+        timestamp_to_date}}
+      </div>
+      <h2>Hourly Forecast</h2>
+      <div class="weather-info">
+        {% for hourly_data in weather_data.hourly %}
+        <div class="weather-item">
+          <strong>Date:</strong> {{ hourly_data.dt | timestamp_to_date }}
+        </div>
+        <div class="weather-item">
+          <strong>Temperature:</strong> {{ hourly_data.temp }} K
+        </div>
+        <div class="weather-item">
+          <strong>Humidity:</strong> {{ hourly_data.humidity }}%
+        </div>
+        <div class="weather-item">
+          <strong>Wind Speed:</strong> {{ hourly_data.wind_speed }} m/s
+        </div>
+        <div>
+          <strong>----------------------------------------------</strong>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+</html>
