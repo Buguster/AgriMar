@@ -33,7 +33,7 @@
   </head>
 
   <body>
-    <div class="container-fluid d-flex h-100" id="resizable-container">
+    <div class="container-fluid d-flex h-100">
         <div class="col h-100 chat">
           <div class="card">
             <div class="card-header msg_head">
@@ -81,17 +81,19 @@
             <div class="card">
                 <div id="map-window">
                     <div id="map" style="height: 300px"></div>
-                    <input type="text" id="latitude" name="latitude" placeholder="Latitude" />
-                    <input
-                    type="text"
-                    id="longitude"
-                    name="longitude"
-                    placeholder="Longitude"
-                    />
-                    <button id="submit-btn">Submit</button>
-                    <div id="success-alert" class="alert alert-success d-none" role="alert">
+                    <form action="/submit" method="POST">
+                      <input type="text" id="latitude" name="latitude" placeholder="Latitude" />
+                      <input
+                      type="text"
+                      id="longitude"
+                      name="longitude"
+                      placeholder="Longitude"
+                      />
+                      <button id="submit-btn">Submit</button>
+                      <div id="success-alert" class="alert alert-success d-none" role="alert">
                         Location saved successfully!
                       </div>
+                    </form>
                 </div>
                 <button id="location-btn">Choose Location</button>
             </div>
@@ -187,7 +189,7 @@
           }
         });
 
-        // on submit button 
+              // on submit button 
         document.getElementById("submit-btn").addEventListener("click", function () {  
         var latitude = document.getElementById("latitude").value;
         var longitude = document.getElementById("longitude").value;
@@ -196,20 +198,23 @@
             xhr.open("POST", "/submit", true);
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                console.log(xhr.responseText);
-            }
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        console.log(xhr.responseText);
+                    } else {
+                        console.error("Failed to submit form: " + xhr.statusText);
+                    }
+                }
             };
             xhr.send(
-              "latitude=" +
-              encodeURIComponent(latitude) +
-              "&longitude=" +
-              encodeURIComponent(longitude)
+                "latitude=" + encodeURIComponent(latitude) +
+                "&longitude=" + encodeURIComponent(longitude)
             );
         } else {
             console.error("Latitude and longitude are required.");
         }
-        });
+    });
+
     </script>
   </body>
 </html>

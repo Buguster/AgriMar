@@ -49,17 +49,15 @@ def login():
     return render_template('login.html', title='Login', form=form)
 
 
-@app.route("/submit", methods=['POST'])
+@app.route("/submit", methods=['GET','POST'])
 def submit():
-    coordinates = CoordinateForm()
-    if coordinates.validate_on_submit():
-        latitude = request.form.get('Latitude')
-        longitude = request.form.get('Longitude')
-        flash("Coordonnées bien enregistrées",'success')
-        weather_data = get_weather(latitude, longitude)
-        return redirect(url_for('map.html'))
-    else:
-        flash("Latitude and longitude are required.", "danger")
+    # coordinates = CoordinateForm()
+    # if coordinates.validate_on_submit():
+    latitude = request.form.get('latitude')
+    longitude = request.form.get('longitude')
+    flash("Coordonnées bien enregistrées",'success')
+    weather_data = get_weather(latitude, longitude)
+    return render_template('map.html', title="map")
 
 if __name__ == '__main__':
     app.run(debug=True)
