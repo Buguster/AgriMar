@@ -1,37 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+{% extends "layout.html" %}
+{% block content %}
+<head>
+
+    <!-- Include Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-      }
-      .container {
-        max-width: 800px;
-        margin: 20px auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
-      h1 {
-        text-align: center;
-      }
-      .weather-info {
-        margin-top: 20px;
-      }
-      .weather-item {
-        margin-bottom: 10px;
-      }
+        /* CSS styles for the map interface window */
+        #map-window {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            z-index: 1000;
+            width: 30%; /* Adjust the width as needed */
+        }
+        #map {
+            height: 300px;
+            margin: 0 auto; /* Center the map horizontally */
+        }
     </style>
-  </head>
-  <body>
-    <div class="container">
-<h1>submitted </h1>
-      </div>
-    </div>
-  </body>
-</html>
+    
+</head>
+<body>
+    <button id="location-btn">Choose Location</button>
+
+    <!-- Hidden map interface window -->
+        <div id="map-window">
+            <form id="location-form" method="post" action="/submit">
+                <div id="map"></div>
+                <label for="latitude" class="form-control-label">{{ form.lat.label }}</label>
+                <input type="text" id="latitude" name="latitude" class="form-control">
+                <label for="longitude" class="form-control-label">{{ form.lon.label }}</label>
+                <input type="text" id="longitude" name="longitude" class="form-control">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        
+
+    <!-- Include Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // Global variable to store the map instance
+        var map;
+        var marker;
+
+        // Function to initialize the map
+        function initMap() {
+            map = L.map('map').setView([32.377665, -6.319866], 8); // Default center and zoom level
+
+            // Add OpenStreetMap tiles to the map
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Add click event listener to get coordinates and add marker
+            map.on('click', function (event) {
+                if (marker) {
+                    map.removeLayer(marker); // Remove previous marker
+                }
+                marker = L.marker(event.latlng, {
+                    draggable: true
+                }).addTo(map);
+                document.getElementById('latitude').value = event.latlng.lat;
+                document.getElementById('longitude').value = event.latlng.lng;
+
+                // Update marker position when dragged
+                marker.on('dragend', function (event) {
+                    var markerLatLng = marker.getLatLng();
+                    document.getElementById('latitude').value = markerLatLng.lat;
+                    document.getElementById('longitude').value = markerLatLng.lng;
+                });
+            });
+
+            // Add event listeners to update map when coordinates change
+            document.getElementById('latitude').addEventListener('input', updateMap);
+            document.getElementById('longitude').addEventListener('input', updateMap);
+        }
+
+        // Function to update map based on input coordinates
+        function updateMap() {
+            var latitude = parseFloat(document.getElementById('latitude').value);
+            var longitude = parseFloat(document.getElementById('longitude').value);
+
+            if (!isNaN(latitude) && !isNaN(longitude)) {
+                if (marker) {
+                    map.removeLayer(marker); // Remove previous marker
+                }
+                marker = L.marker([latitude, longitude], {
+                    draggable: true
+                }).addTo(map);
+                map.setView([latitude, longitude], 15); // Center map at the new coordinates
+                // Update marker position when dragged
+                marker.on('dragend', function (event) {
+                    var markerLatLng = marker.getLatLng();
+                    document.getElementById('latitude').value = markerLatLng.lat;
+                    document.getElementById('longitude').value = markerLatLng.lng;
+                });
+            }
+        }
+
+        // Display map interface window and initialize map
+        document.getElementById('location-btn').addEventListener('click', function () {
+            document.getElementById('map-window').style.display = 'block';
+            initMap();
+        });
+
+        // Handle form submission (optional if you want to manually trigger the submission)
+        document.getElementById('location-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+            var latitude = document.getElementById('latitude').value;
+            var longitude = document.getElementById('longitude').value;
+            // Perform validation
+            if (latitude && longitude) {
+                // Submit the form data
+                this.submit();
+            } else {
+                // Handle error (e.g., display a message to the user)
+                console.error('Latitude and longitude are required.');
+            }
+        });
+    </script>
+</body>
+{% endblock content %}

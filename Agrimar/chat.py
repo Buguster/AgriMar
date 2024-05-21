@@ -1,4 +1,3 @@
-import requests
 from openai import OpenAI
 chatbot = OpenAI()
 
@@ -14,14 +13,3 @@ def CustomChatBot(user_input):
     ChatGPT_reply = response.choices[0].message.content
     chat.append({"role": "assistant", "content": ChatGPT_reply})
     return ChatGPT_reply
-
-
-def get_weather(lat, lon):
-    api_key = "c8c90c9dd99dd912654a8b115e2928bf"
-    url = f'https://api.openweathermap.org/data/3.0/onecall/day_summary?lat={lat}&lon={lon}&appid={api_key}'
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        print(data)
-    else:
-        return None

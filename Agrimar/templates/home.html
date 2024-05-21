@@ -1,16 +1,17 @@
 {% extends "layout.html" %} {% block content %}
-<!DOCTYPE html>
 <link
   href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
   rel="stylesheet"
   id="bootstrap-css"
 />
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Chatbot</title>
+    <title>Chatbot and Map</title>
     <link
-    rel="stylesheet"
+      rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
       integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
       crossorigin="anonymous"
@@ -21,20 +22,32 @@
       integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU"
       crossorigin="anonymous"
     />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link
-    rel="stylesheet"
-    type="text/css"
-    href="{{ url_for('static', filename='main.css')}}"
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='main.css')}}"
     />
-    <!-- include javascript api for google map -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBLh7Ne17_AOYlYWTnqjLwphi6_czkVM30&libraries=places"></script>
+    <!-- Include Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      /* CSS styles for the map interface window */
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+      .chat {
+        height: 500px;
+        overflow-y: auto;
+      }
+    </style>
   </head>
 
   <body>
-    <div class="container-fluid d-flex h-100">
-        <div class="col h-100 chat">
+    <div class="container-fluid h-100">
+      <div class="row justify-content-center h-100">
+        <!-- Chat column -->
+        <div class="col-md-6 col-xl-5 chat">
           <div class="card">
             <div class="card-header msg_head">
               <div class="d-flex bd-highlight">
@@ -43,6 +56,7 @@
                     src="\static\chatbot icon.jpg"
                     class="rounded-circle user_img"
                   />
+                  <!--the chatbot image-->
                   <span class="online_icon"></span>
                 </div>
                 <div class="user_info">
@@ -76,145 +90,125 @@
             </div>
           </div>
         </div>
-        <div class="container-fluid h-100">
-          <div class="col map-container">
-            <div class="card">
-                <div id="map-window">
-                    <div id="map" style="height: 300px"></div>
-                    <form action="/submit" method="POST">
-                      <input type="text" id="latitude" name="latitude" placeholder="Latitude" />
-                      <input
-                      type="text"
-                      id="longitude"
-                      name="longitude"
-                      placeholder="Longitude"
-                      />
-                      <button id="submit-btn">Submit</button>
-                      <div id="success-alert" class="alert alert-success d-none" role="alert">
-                        Location saved successfully!
-                      </div>
-                    </form>
+        <!-- Map column -->
+        <div class="col-md-6 col-xl-5">
+          <div class="card">
+            <div class="card-header msg_head">
+              <div class="d-flex bd-highlight">
+                <div class="user_info">
+                  <span>Select Location</span>
+                  <button id="location-btn" class="btn btn-primary ml-3">
+                    Choose Location
+                  </button>
                 </div>
-                <button id="location-btn">Choose Location</button>
+              </div>
             </div>
+            <div id="map" class="card-body"></div>
           </div>
         </div>
       </div>
     </div>
-<script>
-  $(document).ready(function () {
-    $("#messageArea").on("submit", function (event) {
-      event.preventDefault();
-      const date = new Date();
-      const str_time = date.getHours() + ":" + date.getMinutes();
-      const rawText = $("#text").val();
-      const userHtml = `<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">${rawText}<span class="msg_time_send">${str_time}</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>`;
-      $("#text").val("");
-      $("#messageFormeight").append(userHtml);
-      $.ajax({
-        data: {
-          msg: rawText,
-        },
-        type: "POST",
-        url: "/get",
-      }).done(function (data) {
-        var botHtml =
-          '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="/static/chatbot icon.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
-          data +
-          '<span class="msg_time">' +
-          str_time +
-          "</span></div></div>";
-        $("#messageFormeight").append($.parseHTML(botHtml));
-      });
-    });
-  });
-  // event listener on map to see if the the user click on the map to update the latitude and longitude
-  var map;
-  var marker;
-  function initMap() {
-  map = new google.maps.Map(document.getElementById("map"), {
-      center: { lat: 32.377665, lng: -6.319866 },
-      zoom: 8,
-  });
-  map.addListener("click", function (event) {
-      if (marker) {
-      marker.setMap(null);
-      }
-      marker = new google.maps.Marker({
-      position: event.latLng,
-      map: map,
-      title: "Selected Location",
-      icon: {
-          url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-      },
-      });
-      document.getElementById("latitude").value = event.latLng.lat();
-      document.getElementById("longitude").value = event.latLng.lng();
-  });
-        document.getElementById("latitude").addEventListener("input", updateMap);
-        document.getElementById("longitude").addEventListener("input", updateMap);
-        }
-        function updateMap() {
-        var latitude = parseFloat(document.getElementById("latitude").value);
-        var longitude = parseFloat(document.getElementById("longitude").value);
 
-        if (!isNaN(latitude) && !isNaN(longitude)) {
-            if (marker) {
-            marker.setMap(null);
-            }
-            marker = new google.maps.Marker({
-            position: { lat: latitude, lng: longitude },
-            map: map,
-            title: "Selected Location",
-            icon: {
-                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+    <!-- Include Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#messageArea").on("submit", function (event) {
+          event.preventDefault(); // Prevent default form submission behavior
+
+          const date = new Date();
+          const str_time = date.getHours() + ":" + date.getMinutes();
+          const rawText = $("#text").val();
+
+          const userHtml = `<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">${rawText}<span class="msg_time_send">${str_time}</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>`;
+          $("#text").val("");
+          $("#messageFormeight").append(userHtml);
+
+          $.ajax({
+            data: {
+              msg: rawText,
             },
-            });
-            map.setCenter({ lat: latitude, lng: longitude });
-            map.setZoom(15);
-        }
-        }
-        // chooose location button 
-        document.getElementById("location-btn").addEventListener("click", function () {
-          var mapWindow = document.getElementById("map-window");
-          var locationBtn = document.getElementById("location-btn");
-
-          if (mapWindow.style.display === "none") {
-              mapWindow.style.display = "block";
-              locationBtn.style.display = "none"; // Hide the button when showing the map
-              initMap();
-          } else {
-              mapWindow.style.display = "none";
-              locationBtn.style.display = "block"; // Show the button when hiding the map
-          }
+            type: "POST",
+            url: "/get",
+          }).done(function (data) {
+            var botHtml =
+              '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="/static/chatbot icon.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
+              data +
+              '<span class="msg_time">' +
+              str_time +
+              "</span></div></div>";
+            $("#messageFormeight").append($.parseHTML(botHtml));
+          });
         });
 
-              // on submit button 
-        document.getElementById("submit-btn").addEventListener("click", function () {  
-        var latitude = document.getElementById("latitude").value;
-        var longitude = document.getElementById("longitude").value;
-        if (latitude && longitude) {
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/submit", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4) {
-                    if (xhr.status == 200) {
-                        console.log(xhr.responseText);
-                    } else {
-                        console.error("Failed to submit form: " + xhr.statusText);
-                    }
-                }
-            };
-            xhr.send(
-                "latitude=" + encodeURIComponent(latitude) +
-                "&longitude=" + encodeURIComponent(longitude)
-            );
-        } else {
-            console.error("Latitude and longitude are required.");
-        }
-    });
+        // Initialize the map
+        var map = L.map("map").setView([32.377665, -6.319866], 8); // Default center and zoom level
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
 
+        var marker;
+
+        // Add click event listener to get coordinates and add marker
+        map.on("click", function (event) {
+          if (marker) {
+            map.removeLayer(marker); // Remove previous marker
+          }
+          marker = L.marker(event.latlng, {
+            draggable: true,
+          }).addTo(map);
+          document.getElementById("latitude").value = event.latlng.lat;
+          document.getElementById("longitude").value = event.latlng.lng;
+
+          // Update marker position when dragged
+          marker.on("dragend", function (event) {
+            var markerLatLng = marker.getLatLng();
+            document.getElementById("latitude").value = markerLatLng.lat;
+            document.getElementById("longitude").value = markerLatLng.lng;
+          });
+        });
+
+        // Add event listeners to update map when coordinates change
+        document
+          .getElementById("latitude")
+          .addEventListener("input", updateMap);
+        document
+          .getElementById("longitude")
+          .addEventListener("input", updateMap);
+
+        // Function to update map based on input coordinates
+        function updateMap() {
+          var latitude = parseFloat(document.getElementById("latitude").value);
+          var longitude = parseFloat(
+            document.getElementById("longitude").value
+          );
+
+          if (!isNaN(latitude) && !isNaN(longitude)) {
+            if (marker) {
+              map.removeLayer(marker); // Remove previous marker
+            }
+            marker = L.marker([latitude, longitude], {
+              draggable: true,
+            }).addTo(map);
+            map.setView([latitude, longitude], 15); // Center map at the new coordinates
+            // Update marker position when dragged
+            marker.on("dragend", function (event) {
+              var markerLatLng = marker.getLatLng();
+              document.getElementById("latitude").value = markerLatLng.lat;
+              document.getElementById("longitude").value = markerLatLng.lng;
+            });
+          }
+        }
+
+        // Display map interface window and initialize map
+        document
+          .getElementById("location-btn")
+          .addEventListener("click", function () {
+            document.getElementById("map").style.display = "block";
+            map.invalidateSize(); // Adjust map size after making it visible
+          });
+      });
     </script>
   </body>
 </html>
